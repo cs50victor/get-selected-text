@@ -62,6 +62,7 @@ pub fn get_selected_text() -> Result<SelectedText, Box<dyn std::error::Error>> {
 
     if app_name == "Finder" || app_name.is_empty() {
         if let Ok(text) = get_selected_file_paths_by_clipboard_using_applescript() {
+            println!("file paths: {:?}", text);
             return Ok(SelectedText {
                 is_file_paths: true,
                 app_name: app_name,
