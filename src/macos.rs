@@ -61,13 +61,18 @@ pub fn get_selected_text() -> Result<SelectedText, Box<dyn std::error::Error>> {
     };
 
     if app_name == "Finder" || app_name.is_empty() {
-        if let Ok(text) = get_selected_file_paths_by_clipboard_using_applescript() {
-            println!("file paths: {:?}", text);
-            return Ok(SelectedText {
-                is_file_paths: true,
-                app_name: app_name,
-                text: split_file_paths(&text),
-            });
+        match get_selected_file_paths_by_clipboard_using_applescript() {
+            Ok(text) => {
+                println!("file paths: {:?}", text);
+                return Ok(SelectedText {
+                    is_file_paths: true,
+                    app_name: app_name,
+                    text: split_file_paths(&text),
+                });
+            }
+            Err(e) => {
+                debug_println!("get_selected_file_paths_by_clipboard_using_applescript failed: {:?}", e);
+            }
         }
     }
 
@@ -181,12 +186,9 @@ theSelectedText
 "#;
 
 const FILE_PATH_COPY_APPLE_SCRIPT: &str = r#"
-use AppleScript version "2.4"
 use scripting additions
 use framework "Foundation"
 use framework "AppKit"
-
-set savedAlertVolume to alert volume of (get volume settings)
 
 -- Back up clipboard contents:
 set savedClipboard to the clipboard
@@ -194,17 +196,9 @@ set savedClipboard to the clipboard
 set thePasteboard to current application's NSPasteboard's generalPasteboard()
 set theCount to thePasteboard's changeCount()
 
-tell application "System Events"
-    set volume alert volume 0
-end tell
-
 -- Copy selected text to clipboard:
 tell application "System Events" to keystroke "c" using {command down, option down}
 delay 0.1 -- Without this, the clipboard may have stale data.
-
-tell application "System Events"
-    set volume alert volume savedAlertVolume
-end tell
 
 if thePasteboard's changeCount() is theCount then
     return ""
