@@ -12,6 +12,8 @@ mod windows;
 use crate::linux::get_selected_text as _get_selected_text;
 #[cfg(target_os = "macos")]
 use crate::macos::get_selected_text as _get_selected_text;
+#[cfg(target_os = "macos")]
+pub use crate::macos::in_finder_or_empty_window as _in_finder_or_empty_window;
 #[cfg(target_os = "windows")]
 use crate::windows::get_selected_text as _get_selected_text;
 
